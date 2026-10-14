@@ -178,6 +178,20 @@ def _normalize(text: str | None) -> str:
     return "".join(c for c in nfkd if not unicodedata.combining(c)).lower()
 
 
+def normalize_url(value: Any) -> str | None:
+    """L'API renvoie des liens courts sans schéma (« efs.link/abc ») : on ajoute https://."""
+    if not value or not isinstance(value, str):
+        return None
+    url = value.strip()
+    if not url:
+        return None
+    if url.startswith("//"):
+        return "https:" + url
+    if re.match(r"^[a-zA-Z][a-zA-Z0-9+.-]*:", url):  # schéma explicite
+        return url if url.lower().startswith(("https://", "http://")) else None
+    return "https://" + url
+
+
 def is_professional(nature: str | None) -> bool:
     norm = _normalize(nature)
     return any(keyword in norm for keyword in PRO_KEYWORDS)
@@ -410,7 +424,7 @@ def parse_collections(
                     places_restantes=_to_int(col.get(f"nbPlacesRestantes{suffix}")),
                     places_reservees=_to_int(col.get(f"nbPlacesReservees{suffix}")),
                     taux_remplissage_efs=_to_float(col.get("tauxRemplissage")),
-                    lien_rdv=col.get(url_field) or None,
+                    lien_rdv=normalize_url(col.get(url_field)),
                 )
             )
 

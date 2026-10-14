@@ -194,3 +194,12 @@ def test_reponse_vide_ou_invalide():
             don_type="sang", include_pro=False, horizon_days=60, now=NOW,
         )
         assert res.collectes == []
+
+
+@pytest.mark.parametrize(
+    "raw, expected",
+    [("efs.link/fGWaH", "https://efs.link/fGWaH"), ("https://efs.link/x", "https://efs.link/x"),
+     ("//efs.link/x", "https://efs.link/x"), ("", None), (None, None), ("javascript:alert(1)", None)],
+)
+def test_normalize_url(raw, expected):
+    assert p.normalize_url(raw) == expected
