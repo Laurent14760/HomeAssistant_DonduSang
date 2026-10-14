@@ -1,0 +1,24 @@
+[
+  {
+    "nom": "Rots",
+    "code": "14543",
+    "centre": {
+      "type": "Point",
+      "coordinates": [
+        -0.47,
+        49.21
+      ]
+    }
+  },
+  {
+    "nom": "Le Fresne-Camilly",
+    "code": "14288",
+    "centre": {
+      "type": "Point",
+      "coordinates": [
+        -0.48,
+        49.25
+      ]
+    }
+  }
+]

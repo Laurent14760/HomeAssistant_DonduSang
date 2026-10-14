@@ -1,0 +1,13 @@
+[
+  {
+    "nom": "Bretteville-sur-Odon",
+    "code": "14101",
+    "centre": {
+      "type": "Point",
+      "coordinates": [
+        -0.4185,
+        49.1665
+      ]
+    }
+  }
+]

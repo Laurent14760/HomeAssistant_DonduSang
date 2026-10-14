@@ -1,0 +1,6 @@
+{
+  "name": "EFS – Collectes de don du sang",
+  "homeassistant": "2024.11.0",
+  "render_readme": true,
+  "country": ["FR"]
+}

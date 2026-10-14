@@ -1,0 +1,41 @@
+# Carte à coller : Tableau de bord → Modifier → Ajouter une carte → Manuel
+type: vertical-stack
+cards:
+  - type: markdown
+    title: Don du sang
+    content: >-
+      {% set e = 'sensor.efs_prochaine_collecte' %}
+      {% set r = states('sensor.efs_prochaine_collecte_places_restantes') %}
+      {% set t = states('sensor.efs_prochaine_collecte_places_totales') %}
+      {% set lien = state_attr(e, 'lien_rdv') %}
+      {% if states(e) in ['unknown', 'unavailable'] %}
+      Aucune collecte dans l'horizon configuré.
+      {% else %}
+      Prochaine collecte : **{{ state_attr(e, 'lieu') }}**
+      ({{ state_attr(e, 'commune') }}, {{ state_attr(e, 'distance') }} km)
+
+      {{ as_timestamp(states(e)) | timestamp_custom('%d/%m') }} · {{ state_attr(e, 'horaires') }}
+
+      {{ 'Planning non ouvert' if r in ['unknown', 'unavailable'] else r ~ ' places restantes sur ' ~ t }}{% if lien %} · [Prendre RDV]({{ lien }}){% endif %}
+      {% endif %}
+  - type: horizontal-stack
+    cards:
+      - type: gauge
+        entity: sensor.efs_prochaine_collecte_taux_remplissage
+        name: Remplissage
+        min: 0
+        max: 100
+        needle: true
+        severity:
+          green: 0
+          yellow: 60
+          red: 85
+      - type: map
+        entities:
+          - entity: sensor.efs_prochaine_collecte
+        default_zoom: 11
+        hours_to_show: 0
+  - type: calendar
+    initial_view: listWeek
+    entities:
+      - calendar.efs_collectes

@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Collection location",
+        "description": "Choose the search reference point.",
+        "menu_options": {
+          "home": "Use the home location",
+          "postal_code": "Enter a postal code"
+        }
+      },
+      "postal_code": {
+        "title": "Postal code",
+        "data": {
+          "code_postal": "Postal code"
+        }
+      },
+      "commune": {
+        "title": "Select the municipality",
+        "description": "Postal code {code_postal} covers several municipalities.",
+        "data": {
+          "code_insee": "Municipality"
+        }
+      },
+      "settings": {
+        "title": "Settings – {lieu}",
+        "data": {
+          "rayon_km": "Search radius",
+          "type_don": "Donation type",
+          "inclure_professionnelles": "Include workplace/school collections",
+          "horizon_jours": "Horizon (days)",
+          "max_collectes": "Maximum number of listed collections",
+          "intervalle_minutes": "Refresh interval (minutes)",
+          "jours_alerte": "\"Collection nearby\" threshold (days)",
+          "inclure_maisons_du_don": "Expose permanent donation centres"
+        },
+        "data_description": {
+          "inclure_professionnelles": "Often restricted to staff or students.",
+          "max_collectes": "Capped at 30 to stay under the recorder's 16 kB attribute limit.",
+          "intervalle_minutes": "Seat counts change quickly: 60 min is a good trade-off."
+        }
+      }
+    },
+    "error": {
+      "invalid_postal_code": "The postal code must have 5 digits.",
+      "unknown_postal_code": "No municipality found for this postal code.",
+      "cannot_connect": "Unable to reach the Géo API (geo.api.gouv.fr)."
+    },
+    "abort": {
+      "already_configured": "This location is already configured.",
+      "no_home_location": "The home location is not set in Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "EFS settings",
+        "data": {
+          "rayon_km": "Search radius",
+          "type_don": "Donation type",
+          "inclure_professionnelles": "Include workplace/school collections",
+          "horizon_jours": "Horizon (days)",
+          "max_collectes": "Maximum number of listed collections",
+          "intervalle_minutes": "Refresh interval (minutes)",
+          "jours_alerte": "\"Collection nearby\" threshold (days)",
+          "inclure_maisons_du_don": "Expose permanent donation centres"
+        },
+        "data_description": {
+          "inclure_professionnelles": "Often restricted to staff or students.",
+          "max_collectes": "Capped at 30 to stay under the recorder's 16 kB attribute limit.",
+          "intervalle_minutes": "Seat counts change quickly: 60 min is a good trade-off."
+        }
+      }
+    }
+  },
+  "selector": {
+    "type_don": {
+      "options": {
+        "sang": "Whole blood",
+        "plasma": "Plasma",
+        "plaquettes": "Platelets"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "prochaine_collecte": {
+        "name": "Next collection"
+      },
+      "prochaine_collecte_places_totales": {
+        "name": "Next collection – total seats"
+      },
+      "prochaine_collecte_places_restantes": {
+        "name": "Next collection – remaining seats"
+      },
+      "prochaine_collecte_taux_remplissage": {
+        "name": "Next collection – fill rate"
+      },
+      "collectes_a_venir": {
+        "name": "Upcoming collections"
+      }
+    },
+    "calendar": {
+      "collectes": {
+        "name": "Collections"
+      }
+    },
+    "binary_sensor": {
+      "collecte_proche": {
+        "name": "Collection nearby"
+      }
+    }
+  }
+}

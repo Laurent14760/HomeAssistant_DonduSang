@@ -1,0 +1,114 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Localisation des collectes",
+        "description": "Choisissez le point de référence de la recherche.",
+        "menu_options": {
+          "home": "Utiliser la position de la maison",
+          "postal_code": "Saisir un code postal"
+        }
+      },
+      "postal_code": {
+        "title": "Code postal",
+        "data": {
+          "code_postal": "Code postal"
+        }
+      },
+      "commune": {
+        "title": "Choix de la commune",
+        "description": "Le code postal {code_postal} couvre plusieurs communes.",
+        "data": {
+          "code_insee": "Commune"
+        }
+      },
+      "settings": {
+        "title": "Réglages – {lieu}",
+        "data": {
+          "rayon_km": "Rayon de recherche",
+          "type_don": "Type de don",
+          "inclure_professionnelles": "Inclure les collectes professionnelles (entreprises, lycées…)",
+          "horizon_jours": "Horizon (jours)",
+          "max_collectes": "Nombre maximum de collectes listées",
+          "intervalle_minutes": "Intervalle de rafraîchissement (minutes)",
+          "jours_alerte": "Seuil « collecte proche » (jours)",
+          "inclure_maisons_du_don": "Exposer les Maisons du don (horaires fixes)"
+        },
+        "data_description": {
+          "inclure_professionnelles": "Souvent réservées au personnel ou aux élèves.",
+          "max_collectes": "Plafonné à 30 pour rester sous la limite de 16 Ko d'attributs du recorder.",
+          "intervalle_minutes": "Les places évoluent vite : 60 min est un bon compromis."
+        }
+      }
+    },
+    "error": {
+      "invalid_postal_code": "Le code postal doit comporter 5 chiffres.",
+      "unknown_postal_code": "Aucune commune trouvée pour ce code postal.",
+      "cannot_connect": "Impossible de joindre l'API Géo (geo.api.gouv.fr)."
+    },
+    "abort": {
+      "already_configured": "Cette localisation est déjà configurée.",
+      "no_home_location": "La position de la maison n'est pas définie dans Home Assistant."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Réglages EFS",
+        "data": {
+          "rayon_km": "Rayon de recherche",
+          "type_don": "Type de don",
+          "inclure_professionnelles": "Inclure les collectes professionnelles (entreprises, lycées…)",
+          "horizon_jours": "Horizon (jours)",
+          "max_collectes": "Nombre maximum de collectes listées",
+          "intervalle_minutes": "Intervalle de rafraîchissement (minutes)",
+          "jours_alerte": "Seuil « collecte proche » (jours)",
+          "inclure_maisons_du_don": "Exposer les Maisons du don (horaires fixes)"
+        },
+        "data_description": {
+          "inclure_professionnelles": "Souvent réservées au personnel ou aux élèves.",
+          "max_collectes": "Plafonné à 30 pour rester sous la limite de 16 Ko d'attributs du recorder.",
+          "intervalle_minutes": "Les places évoluent vite : 60 min est un bon compromis."
+        }
+      }
+    }
+  },
+  "selector": {
+    "type_don": {
+      "options": {
+        "sang": "Sang total",
+        "plasma": "Plasma",
+        "plaquettes": "Plaquettes"
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "prochaine_collecte": {
+        "name": "Prochaine collecte"
+      },
+      "prochaine_collecte_places_totales": {
+        "name": "Prochaine collecte – places totales"
+      },
+      "prochaine_collecte_places_restantes": {
+        "name": "Prochaine collecte – places restantes"
+      },
+      "prochaine_collecte_taux_remplissage": {
+        "name": "Prochaine collecte – taux de remplissage"
+      },
+      "collectes_a_venir": {
+        "name": "Collectes à venir"
+      }
+    },
+    "calendar": {
+      "collectes": {
+        "name": "Collectes"
+      }
+    },
+    "binary_sensor": {
+      "collecte_proche": {
+        "name": "Collecte proche"
+      }
+    }
+  }
+}

@@ -1,0 +1,57 @@
+# Trois automatisations indépendantes : importer chacune via
+# Paramètres → Automatisations → Créer → ⋮ → Modifier en YAML.
+# Remplacer notify.notify par votre service (notify.mobile_app_...).
+
+# 1. Rappel la veille d'une collecte
+alias: EFS – rappel la veille
+mode: queued
+triggers:
+  - trigger: calendar
+    event: start
+    entity_id: calendar.efs_collectes
+    offset: "-12:00:00"
+actions:
+  - action: notify.notify
+    data:
+      title: "{{ trigger.calendar_event.summary }}"
+      message: >-
+        Demain {{ as_timestamp(trigger.calendar_event.start) | timestamp_custom('%Hh%M') }}
+        – {{ trigger.calendar_event.location }}.
+        {{ trigger.calendar_event.description.split('\n')[0] }}
+
+---
+# 2. Moins de 10 places restantes
+alias: EFS – places bientôt épuisées
+mode: single
+triggers:
+  - trigger: numeric_state
+    entity_id: sensor.efs_prochaine_collecte_places_restantes
+    below: 10
+actions:
+  - action: notify.notify
+    data:
+      title: Don du sang – dernières places
+      message: >-
+        Plus que {{ states('sensor.efs_prochaine_collecte_places_restantes') }} places
+        à {{ state_attr('sensor.efs_prochaine_collecte', 'lieu') }}
+        ({{ state_attr('sensor.efs_prochaine_collecte', 'commune') }}).
+
+---
+# 3. Ouverture du planning de rendez-vous
+alias: EFS – planning ouvert
+mode: single
+triggers:
+  - trigger: state
+    entity_id: sensor.efs_prochaine_collecte_places_restantes
+    from: unknown
+conditions:
+  - condition: template
+    value_template: "{{ trigger.to_state.state not in ['unknown', 'unavailable'] }}"
+actions:
+  - action: notify.notify
+    data:
+      title: Don du sang – rendez-vous ouverts
+      message: >-
+        Les rendez-vous sont ouverts pour {{ state_attr('sensor.efs_prochaine_collecte', 'lieu') }}
+        le {{ as_timestamp(states('sensor.efs_prochaine_collecte')) | timestamp_custom('%d/%m') }} :
+        {{ state_attr('sensor.efs_prochaine_collecte', 'lien_rdv') }}
