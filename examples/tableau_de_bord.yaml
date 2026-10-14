@@ -1,4 +1,4 @@
-# Option 1 – carte dédiée incluse dans l'intégration (rendu identique aux maquettes)
+# Option 1 – carte dédiée (dépôt HomeAssistant_DonduSang_Card, à installer via HACS)
 # type: custom:efs-collectes-card
 # vue: complet
 
