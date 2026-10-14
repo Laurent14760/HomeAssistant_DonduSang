@@ -60,3 +60,6 @@ DEFAULT_OPTIONS: Final = {
 }
 
 STORAGE_VERSION: Final = 1
+
+CARD_VERSION: Final = "1.1.0"
+CARD_URL: Final = "/efs_dondesang/efs-collectes-card.js"

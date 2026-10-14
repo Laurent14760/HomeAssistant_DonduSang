@@ -5,7 +5,7 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 | Élément | Valeur |
 |---|---|
 | Domaine | `efs_dondesang` |
-| Version | 1.0.0 |
+| Version | 1.1.0 |
 | Home Assistant minimum | 2024.11 |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
@@ -121,6 +121,31 @@ Une seconde instance reçoit des identifiants suffixés `_2` (`sensor.efs_procha
 ---
 
 ## 5. Affichage
+
+### Carte dédiée `custom:efs-collectes-card` (incluse)
+
+L’intégration embarque sa propre carte Lovelace, chargée automatiquement : aucune ressource à déclarer, rien à installer en plus. Elle reprend trois visuels, utilisables ensemble ou séparément :
+
+| `vue` | Contenu |
+|---|---|
+| `synthese` | Prochaine collecte : date, créneaux, lieu, places restantes, barre de remplissage, boutons « Prendre rendez-vous » et « Itinéraire » |
+| `agenda` | Collectes à venir avec statut (places, complet, planning non ouvert) et lien de rendez-vous |
+| `carte` | Plan des lieux dans le rayon, jauge de remplissage et places réservées par collecte |
+| `complet` (défaut) | Les trois, empilés |
+
+```yaml
+type: custom:efs-collectes-card
+vue: synthese            # synthese | agenda | carte | complet
+max: 6                   # lignes de l’agenda
+couleur: "#B42318"       # accent (facultatif)
+# Pour une seconde instance :
+# entity: sensor.efs_prochaine_collecte_2
+# agenda_entity: sensor.efs_collectes_a_venir_2
+```
+
+La carte suit le thème de Home Assistant (clair ou sombre) et apparaît dans le sélecteur de cartes sous « EFS – Collectes de don du sang ». Après une mise à jour de l’intégration, rechargez la page du navigateur pour obtenir la nouvelle version de la carte.
+
+### Cartes natives
 
 Le fichier `examples/tableau_de_bord.yaml` contient une pile de cartes prête à coller (Tableau de bord → ⋮ → Modifier → Ajouter une carte → Manuel). Elle combine :
 

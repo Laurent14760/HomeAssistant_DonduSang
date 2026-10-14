@@ -1,3 +1,8 @@
+# Option 1 – carte dédiée incluse dans l'intégration (rendu identique aux maquettes)
+# type: custom:efs-collectes-card
+# vue: complet
+
+# Option 2 – cartes natives uniquement
 # Carte à coller : Tableau de bord → Modifier → Ajouter une carte → Manuel
 type: vertical-stack
 cards:

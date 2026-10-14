@@ -292,7 +292,11 @@ class Collecte:
             "places_totales": self.places_totales,
             "places_restantes": self.places_restantes,
             "places_reservees": self.places_reservees,
+            "taux_remplissage": self.taux_remplissage,
+            "statut": self.statut,
             "lien_rdv": self.lien_rdv,
+            "latitude": round(self.latitude, 5),
+            "longitude": round(self.longitude, 5),
         }
 
 

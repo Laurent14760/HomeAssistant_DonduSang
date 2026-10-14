@@ -1,17 +1,32 @@
 """Intégration Home Assistant des collectes de l'Établissement français du sang."""
 from __future__ import annotations
 
+from pathlib import Path
+
+from homeassistant.components.frontend import add_extra_js_url
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.typing import ConfigType
 
-from .const import DOMAIN, STORAGE_VERSION
+from .const import CARD_URL, CARD_VERSION, DOMAIN, STORAGE_VERSION
 from .coordinator import EfsCoordinator
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR, Platform.BINARY_SENSOR]
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
 
 type EfsConfigEntry = ConfigEntry[EfsCoordinator]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Sert et charge automatiquement la carte Lovelace custom:efs-collectes-card."""
+    card = Path(__file__).parent / "frontend" / "efs-collectes-card.js"
+    await hass.http.async_register_static_paths([StaticPathConfig(CARD_URL, str(card), True)])
+    add_extra_js_url(hass, f"{CARD_URL}?v={CARD_VERSION}")
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: EfsConfigEntry) -> bool:
