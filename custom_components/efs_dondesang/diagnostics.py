@@ -31,6 +31,10 @@ async def async_get_config_entry_diagnostics(
     if data is None:
         return diag
     diag["donnees"] = {
+        "localisation": {
+            "source": entry.data.get("source"),
+            "libelle": data.centre.libelle if data.centre else None,
+        },
         "source": data.source,
         "api_disponible": data.api_disponible,
         "derniere_reussite": data.derniere_reussite.isoformat() if data.derniere_reussite else None,

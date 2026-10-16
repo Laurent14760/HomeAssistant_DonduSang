@@ -180,7 +180,7 @@ def test_attribut_compact_sous_16ko():
     taille = len(json.dumps([c.as_compact()] * 30, ensure_ascii=False).encode())
     assert taille < 16_000
     assert {"places_totales", "places_restantes", "places_reservees", "statut",
-            "taux_remplissage", "latitude", "longitude"} <= c.as_compact().keys()
+            "taux_remplissage", "latitude", "longitude", "adresse", "fin"} <= c.as_compact().keys()
 
 
 def test_maisons_du_don():

@@ -14,15 +14,17 @@ EFS_WEBSITE: Final = "https://dondesang.efs.sante.fr"
 API_LIMIT: Final = 100
 REQUEST_TIMEOUT: Final = 30
 
-# Données de l'entrée (localisation, figée à l'installation)
+# Données de l'entrée : localisation (modifiable via « Configurer » → Localisation)
 CONF_SOURCE: Final = "source"
 CONF_POSTAL_CODE: Final = "code_postal"
 CONF_COMMUNE: Final = "commune"
 CONF_INSEE: Final = "code_insee"
 CONF_LATITUDE: Final = "latitude"
 CONF_LONGITUDE: Final = "longitude"
+CONF_ENTITY: Final = "entite"
 SOURCE_HOME: Final = "home"
 SOURCE_POSTAL: Final = "postal"
+SOURCE_ENTITY: Final = "entity"
 
 # Options (modifiables sans réinstaller)
 CONF_RADIUS: Final = "rayon_km"

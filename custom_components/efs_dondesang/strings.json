@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Collection location",
-        "description": "Choose the search reference point.",
+        "description": "Where should collections be searched? You can add more instances to watch several areas, and change this later via \"Configure\".",
         "menu_options": {
-          "home": "Use the home location",
-          "postal_code": "Enter a postal code"
+          "home": "Home location (follows the home set in Home Assistant)",
+          "postal_code": "A municipality, by postal code",
+          "entity": "A zone, person or tracker (position followed)"
         }
       },
       "postal_code": {
@@ -20,6 +21,13 @@
         "description": "Postal code {code_postal} covers several municipalities.",
         "data": {
           "code_insee": "Municipality"
+        }
+      },
+      "entity": {
+        "title": "Follow an entity",
+        "description": "Searches around the chosen entity's position and refreshes when it moves more than 3 km (at most every 10 minutes). A zone gives a fixed point; a person or tracker, a moving one.",
+        "data": {
+          "entite": "Entity"
         }
       },
       "settings": {
@@ -44,17 +52,55 @@
     "error": {
       "invalid_postal_code": "The postal code must have 5 digits.",
       "unknown_postal_code": "No municipality found for this postal code.",
-      "cannot_connect": "Unable to reach the Géo API (geo.api.gouv.fr)."
+      "cannot_connect": "Unable to reach the Géo API (geo.api.gouv.fr).",
+      "entity_no_location": "This entity does not currently report a position (latitude and longitude)."
     },
     "abort": {
-      "already_configured": "This location is already configured.",
+      "already_configured": "An instance already watches this location.",
       "no_home_location": "The home location is not set in Home Assistant."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "EFS settings",
+        "title": "Configure",
+        "description": "Current location: **{lieu}**",
+        "menu_options": {
+          "location": "Change location",
+          "settings": "Settings (radius, donation type, horizon…)"
+        }
+      },
+      "location": {
+        "title": "New location",
+        "description": "Current location: **{lieu}**. Entity IDs do not change: dashboards and automations keep working.",
+        "menu_options": {
+          "home": "Home location (follows the home set in Home Assistant)",
+          "postal_code": "A municipality, by postal code",
+          "entity": "A zone, person or tracker (position followed)"
+        }
+      },
+      "postal_code": {
+        "title": "Postal code",
+        "data": {
+          "code_postal": "Postal code"
+        }
+      },
+      "commune": {
+        "title": "Select the municipality",
+        "description": "Postal code {code_postal} covers several municipalities.",
+        "data": {
+          "code_insee": "Municipality"
+        }
+      },
+      "entity": {
+        "title": "Follow an entity",
+        "description": "Searches around the chosen entity's position and refreshes when it moves more than 3 km (at most every 10 minutes). A zone gives a fixed point; a person or tracker, a moving one.",
+        "data": {
+          "entite": "Entity"
+        }
+      },
+      "settings": {
+        "title": "Settings",
         "data": {
           "rayon_km": "Search radius",
           "type_don": "Donation type",
@@ -71,6 +117,16 @@
           "intervalle_minutes": "Seat counts change quickly: 60 min is a good trade-off."
         }
       }
+    },
+    "error": {
+      "invalid_postal_code": "The postal code must have 5 digits.",
+      "unknown_postal_code": "No municipality found for this postal code.",
+      "cannot_connect": "Unable to reach the Géo API (geo.api.gouv.fr).",
+      "entity_no_location": "This entity does not currently report a position (latitude and longitude)."
+    },
+    "abort": {
+      "already_configured": "An instance already watches this location.",
+      "no_home_location": "The home location is not set in Home Assistant."
     }
   },
   "selector": {

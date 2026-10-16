@@ -20,9 +20,9 @@ class EfsEntity(CoordinatorEntity[EfsCoordinator]):
         entry = coordinator.config_entry
         self._attr_translation_key = key
         self._attr_unique_id = f"{entry.entry_id}_{key}"
-        # Identifiant stable et lisible : sensor.efs_prochaine_collecte, etc.
-        # Une seconde instance reçoit automatiquement le suffixe _2.
-        self.entity_id = f"{domain}.efs_{key}"
+        # L'identifiant d'entité est dérivé du nom de l'instance (« EFS Caen » →
+        # sensor.efs_caen_prochaine_collecte), ce qui distingue clairement plusieurs zones.
+        # Une entité déjà enregistrée conserve son identifiant, même si le lieu change.
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
             name=entry.title,

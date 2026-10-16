@@ -1,19 +1,27 @@
-"""Chargement du module métier sans dépendre de Home Assistant."""
+"""Chargement des modules métier sans dépendre de Home Assistant.
+
+Le paquet de l'intégration importe Home Assistant dans son __init__ ; on enregistre
+donc un paquet synthétique pointant sur le même dossier pour charger uniquement
+les modules purs (parser, location, const).
+"""
 from __future__ import annotations
 
-import importlib.util
+import importlib
 import json
 from pathlib import Path
 import sys
+import types
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = Path(__file__).parent / "fixtures"
-_PARSER_PATH = ROOT / "custom_components" / "efs_dondesang" / "parser.py"
+PKG_DIR = ROOT / "custom_components" / "efs_dondesang"
 
-_spec = importlib.util.spec_from_file_location("efs_parser", _PARSER_PATH)
-parser = importlib.util.module_from_spec(_spec)
-sys.modules["efs_parser"] = parser
-_spec.loader.exec_module(parser)
+_pkg = types.ModuleType("efs_pkg")
+_pkg.__path__ = [str(PKG_DIR)]
+sys.modules.setdefault("efs_pkg", _pkg)
+
+parser = importlib.import_module("efs_pkg.parser")
+location = importlib.import_module("efs_pkg.location")
 
 
 def load_fixture(name: str):

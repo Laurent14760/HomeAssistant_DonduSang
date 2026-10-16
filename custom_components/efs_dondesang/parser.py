@@ -285,8 +285,10 @@ class Collecte:
         return {
             "date": self.jour.isoformat(),
             "debut": self.debut.isoformat(),
+            "fin": self.fin.isoformat(),
             "horaires": self.horaires,
             "lieu": self.lieu,
+            "adresse": self.adresse,
             "commune": self.commune,
             "distance": self.distance_km,
             "places_totales": self.places_totales,

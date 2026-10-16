@@ -15,12 +15,13 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import EfsConfigEntry
 from .const import (
-    CONF_COMMUNE,
     CONF_DON_TYPE,
     CONF_HORIZON,
     CONF_MAISONS_DU_DON,
     CONF_MAX_ITEMS,
     CONF_RADIUS,
+    CONF_SOURCE,
+    SOURCE_POSTAL,
 )
 from .entity import EfsEntity
 
@@ -166,14 +167,20 @@ class CollectesAVenirSensor(EfsEntity, SensorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         n = int(self.coordinator.options[CONF_MAX_ITEMS])
         entry = self.coordinator.config_entry
+        data = self.coordinator.data
+        centre = data.centre if data else None
         attrs: dict[str, Any] = {
             "collectes": [c.as_compact() for c in self.collectes[:n]],
             # Point de recherche et paramètres, utilisés par la carte efs-collectes-card
+            "instance": entry.title,
+            "localisation": entry.data.get(CONF_SOURCE, SOURCE_POSTAL),
             "centre": {
-                "libelle": entry.data.get(CONF_COMMUNE) or "Maison",
-                "latitude": round(self.coordinator.latitude, 4),
-                "longitude": round(self.coordinator.longitude, 4),
-            },
+                "libelle": centre.libelle,
+                "latitude": round(centre.latitude, 4),
+                "longitude": round(centre.longitude, 4),
+            }
+            if centre
+            else None,
             "rayon_km": self.coordinator.options[CONF_RADIUS],
             "horizon_jours": self.coordinator.options[CONF_HORIZON],
             "type_don": self.coordinator.options[CONF_DON_TYPE],

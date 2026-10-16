@@ -3,10 +3,11 @@
     "step": {
       "user": {
         "title": "Localisation des collectes",
-        "description": "Choisissez le point de référence de la recherche.",
+        "description": "Autour de quel point chercher les collectes ? Vous pourrez ajouter d'autres instances pour surveiller plusieurs zones, et changer ce choix plus tard via « Configurer ».",
         "menu_options": {
-          "home": "Utiliser la position de la maison",
-          "postal_code": "Saisir un code postal"
+          "home": "Position de la maison (suit la maison définie dans Home Assistant)",
+          "postal_code": "Une commune, par son code postal",
+          "entity": "Une zone, une personne ou un traceur (position suivie)"
         }
       },
       "postal_code": {
@@ -20,6 +21,13 @@
         "description": "Le code postal {code_postal} couvre plusieurs communes.",
         "data": {
           "code_insee": "Commune"
+        }
+      },
+      "entity": {
+        "title": "Suivre une entité",
+        "description": "La recherche se fait autour de la position de l'entité choisie et se met à jour quand elle se déplace de plus de 3 km (au plus une fois toutes les 10 minutes). Une zone donne un point fixe ; une personne ou un traceur, un point mobile.",
+        "data": {
+          "entite": "Entité"
         }
       },
       "settings": {
@@ -44,17 +52,55 @@
     "error": {
       "invalid_postal_code": "Le code postal doit comporter 5 chiffres.",
       "unknown_postal_code": "Aucune commune trouvée pour ce code postal.",
-      "cannot_connect": "Impossible de joindre l'API Géo (geo.api.gouv.fr)."
+      "cannot_connect": "Impossible de joindre l'API Géo (geo.api.gouv.fr).",
+      "entity_no_location": "Cette entité ne publie pas de position (latitude et longitude) pour le moment."
     },
     "abort": {
-      "already_configured": "Cette localisation est déjà configurée.",
+      "already_configured": "Une instance surveille déjà ce lieu.",
       "no_home_location": "La position de la maison n'est pas définie dans Home Assistant."
     }
   },
   "options": {
     "step": {
       "init": {
-        "title": "Réglages EFS",
+        "title": "Configurer",
+        "description": "Localisation actuelle : **{lieu}**",
+        "menu_options": {
+          "location": "Changer de localisation",
+          "settings": "Réglages (rayon, type de don, horizon…)"
+        }
+      },
+      "location": {
+        "title": "Nouvelle localisation",
+        "description": "Localisation actuelle : **{lieu}**. Les identifiants des entités ne changent pas : tableaux de bord et automatisations restent valides.",
+        "menu_options": {
+          "home": "Position de la maison (suit la maison définie dans Home Assistant)",
+          "postal_code": "Une commune, par son code postal",
+          "entity": "Une zone, une personne ou un traceur (position suivie)"
+        }
+      },
+      "postal_code": {
+        "title": "Code postal",
+        "data": {
+          "code_postal": "Code postal"
+        }
+      },
+      "commune": {
+        "title": "Choix de la commune",
+        "description": "Le code postal {code_postal} couvre plusieurs communes.",
+        "data": {
+          "code_insee": "Commune"
+        }
+      },
+      "entity": {
+        "title": "Suivre une entité",
+        "description": "La recherche se fait autour de la position de l'entité choisie et se met à jour quand elle se déplace de plus de 3 km (au plus une fois toutes les 10 minutes). Une zone donne un point fixe ; une personne ou un traceur, un point mobile.",
+        "data": {
+          "entite": "Entité"
+        }
+      },
+      "settings": {
+        "title": "Réglages",
         "data": {
           "rayon_km": "Rayon de recherche",
           "type_don": "Type de don",
@@ -71,6 +117,16 @@
           "intervalle_minutes": "Les places évoluent vite : 60 min est un bon compromis."
         }
       }
+    },
+    "error": {
+      "invalid_postal_code": "Le code postal doit comporter 5 chiffres.",
+      "unknown_postal_code": "Aucune commune trouvée pour ce code postal.",
+      "cannot_connect": "Impossible de joindre l'API Géo (geo.api.gouv.fr).",
+      "entity_no_location": "Cette entité ne publie pas de position (latitude et longitude) pour le moment."
+    },
+    "abort": {
+      "already_configured": "Une instance surveille déjà ce lieu.",
+      "no_home_location": "La position de la maison n'est pas définie dans Home Assistant."
     }
   },
   "selector": {

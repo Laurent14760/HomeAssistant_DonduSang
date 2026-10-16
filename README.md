@@ -5,8 +5,8 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 | Élément | Valeur |
 |---|---|
 | Domaine | `efs_dondesang` |
-| Version | 1.2.0 |
-| Home Assistant minimum | 2024.11 |
+| Version | 1.3.0 |
+| Home Assistant minimum | 2024.11 (icône de l’intégration affichée à partir de 2026.3) |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
 | Configuration | 100 % interface, aucune ligne de YAML |
@@ -27,6 +27,8 @@ efs_dondesang/
 │   ├── config_flow.py                assistant d'installation et options
 │   ├── sensor.py / calendar.py / binary_sensor.py
 │   ├── diagnostics.py
+│   ├── brand/                       icône et logo (goutte de sang)
+│   ├── location.py                  choix et suivi du lieu de recherche
 │   ├── manifest.json, strings.json
 │   └── translations/fr.json, en.json
 ├── examples/
@@ -65,10 +67,11 @@ L’installation manuelle ne bénéficie pas des notifications de mise à jour H
 
 **Paramètres → Appareils et services → Ajouter une intégration → « EFS »**
 
-L’assistant propose deux points de référence :
+L’assistant propose trois points de référence :
 
-- **Utiliser la position de la maison** : reprend la position définie dans Paramètres → Système → Général. C’est le cas le plus courant, sans saisie.
-- **Saisir un code postal** : la commune est résolue par l’API Géo de l’État (`geo.api.gouv.fr`). Si le code postal couvre plusieurs communes (cas fréquent en zone rurale), un écran permet de choisir la bonne ; son centre géographique devient le point de recherche.
+- **Position de la maison** : celle définie dans Paramètres → Système → Général. Elle est suivie : si vous la modifiez, la recherche suit.
+- **Une commune, par son code postal** : la commune est résolue par l’API Géo de l’État (`geo.api.gouv.fr`). Si le code postal couvre plusieurs communes (cas fréquent en zone rurale), un écran permet de choisir la bonne ; son centre géographique devient le point de recherche.
+- **Une zone, une personne ou un traceur** : la recherche se fait autour de la position de l’entité choisie. Une zone (`zone.travail`) donne un point fixe que l’on déplace depuis Paramètres → Zones ; une personne ou un traceur donne un point mobile (voir ci-dessous).
 
 Viennent ensuite les réglages :
 
@@ -83,9 +86,20 @@ Viennent ensuite les réglages :
 | Seuil « collecte proche » | 7 jours | Pilote le capteur binaire. |
 | Exposer les Maisons du don | Non | Ajoute les sites fixes à proximité dans un attribut. |
 
-Tous ces réglages restent modifiables ensuite via **Configurer** sur la carte de l’intégration ; l’instance se recharge automatiquement.
+### Modifier après l’installation : bouton « Configurer »
 
-**Plusieurs instances** : on peut ajouter l’intégration une seconde fois (par exemple domicile et lieu de travail). Une même localisation ne peut pas être configurée deux fois.
+**Paramètres → Appareils et services → EFS – Collectes de don du sang → (instance) → Configurer** ouvre un menu :
+
+- **Changer de localisation** : mêmes trois choix qu’à l’installation. Le nom de l’instance suit le nouveau lieu, mais **les identifiants des entités ne changent pas** : tableaux de bord, cartes et automatisations restent valides.
+- **Réglages** : rayon, type de don, horizon, intervalle… (tableau ci-dessus).
+
+L’instance se recharge automatiquement ; aucune réinstallation, aucun redémarrage.
+
+**Localisation mobile (personne ou traceur).** Une nouvelle recherche est lancée quand l’entité s’éloigne de plus de 3 km du dernier point de recherche, au plus une fois toutes les 10 minutes, en plus du rafraîchissement régulier. Si l’entité ne publie momentanément plus de position (téléphone sans GPS, hors zone), l’instance conserve le dernier lieu connu.
+
+### Plusieurs zones
+
+L’intégration s’ajoute autant de fois que nécessaire : **Ajouter une intégration → EFS** à nouveau, avec un autre lieu (domicile, travail, résidence secondaire, un proche…). Chaque instance a son propre appareil, ses réglages, son calendrier et ses capteurs, nommés d’après la zone : une instance « EFS Caen » crée `sensor.efs_caen_prochaine_collecte`, `calendar.efs_caen_collectes`, etc. Un même lieu ne peut pas être surveillé par deux instances (le message « Une instance surveille déjà ce lieu » l’indique). Chaque instance interroge l’API une fois par intervalle.
 
 ---
 
@@ -101,11 +115,11 @@ Tous ces réglages restent modifiables ensuite via **Configurer** sur la carte d
 | `calendar.efs_collectes` | Actif pendant un créneau | Cartes Calendrier/Agenda, déclencheur « la veille » |
 | `binary_sensor.efs_collecte_proche` | Actif si collecte sous X jours | Conditions d’automatisation |
 
-Une seconde instance reçoit des identifiants suffixés `_2` (`sensor.efs_prochaine_collecte_2`…), renommables dans l’interface.
+Les identifiants ci-dessus sont ceux de la première instance installée avant la v1.3.0 ; les instances créées depuis portent le nom de leur zone (`sensor.efs_<zone>_prochaine_collecte`, `calendar.efs_<zone>_collectes`…). Tous restent renommables dans l’interface.
 
 **Attributs de `sensor.efs_prochaine_collecte`** : `lieu`, `adresse`, `commune`, `code_postal`, `distance` (km), `horaires` (ex. `08h30-12h00 / 15h00-19h00`), `fin`, `creneaux`, `statut` (*Planning ouvert*, *Planning non ouvert*, *Complet*), `places_totales`, `places_restantes`, `places_reservees`, `taux_remplissage`, `places` (texte prêt à afficher), `lien_rdv`, `libelle`, `nature`, `latitude`, `longitude`, `type_don`, `api_disponible`, `derniere_mise_a_jour`.
 
-**Chaque élément de l’attribut `collectes`** porte `date`, `debut`, `horaires`, `lieu`, `commune`, `distance`, `places_totales`, `places_restantes`, `places_reservees` et `lien_rdv`.
+**Chaque élément de l’attribut `collectes`** porte `date`, `debut`, `fin`, `horaires`, `lieu`, `adresse`, `commune`, `distance`, `places_totales`, `places_restantes`, `places_reservees`, `taux_remplissage`, `statut`, `lien_rdv`, `latitude` et `longitude`. Le même capteur expose aussi `instance`, `localisation` (`home`, `postal` ou `entity`), `centre` (point de recherche), `rayon_km`, `horizon_jours` et `type_don`.
 
 **Calendrier** : un événement par créneau (une collecte matin + après-midi donne deux événements). La description reprend les places (« 39 places restantes sur 54 » ou « Planning non ouvert »), le créneau, la distance et le lien de rendez-vous.
 
