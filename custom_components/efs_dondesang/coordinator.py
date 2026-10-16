@@ -37,6 +37,7 @@ from .location import (
     cache_matches,
     coords_from_attributes,
     describe,
+    entity_label,
     should_refresh_on_move,
 )
 from .parser import ParseResult, parse_collections
@@ -112,7 +113,8 @@ class EfsCoordinator(DataUpdateCoordinator[EfsData]):
             coords = coords_from_attributes(state.attributes if state else None)
             if coords is None:
                 return None
-            return Point(coords[0], coords[1], state.name)
+            label = entity_label(state.entity_id, state.name, self.hass.config.location_name)
+            return Point(coords[0], coords[1], label)
         return Point(
             float(data[CONF_LATITUDE]),
             float(data[CONF_LONGITUDE]),

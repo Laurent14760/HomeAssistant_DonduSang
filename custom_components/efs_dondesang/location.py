@@ -74,6 +74,36 @@ def unique_id_for(data: Mapping[str, Any]) -> str:
     return f"{float(data[CONF_LATITUDE]):.3f}_{float(data[CONF_LONGITUDE]):.3f}"
 
 
+def same_location(a: Mapping[str, Any], b: Mapping[str, Any]) -> bool:
+    """Deux localisations désignent-elles le même lieu ?
+
+    Compare le lieu lui-même plutôt que l'identifiant unique, dont le format a changé
+    en 1.3.0 (une instance « maison » créée avant enregistrait ses coordonnées).
+    """
+    sa, sb = a.get(CONF_SOURCE, SOURCE_POSTAL), b.get(CONF_SOURCE, SOURCE_POSTAL)
+    if sa != sb:
+        return False
+    if sa == SOURCE_HOME:
+        return True
+    if sa == SOURCE_ENTITY:
+        return a.get(CONF_ENTITY) == b.get(CONF_ENTITY)
+    try:
+        d = haversine_km(
+            float(a[CONF_LATITUDE]), float(a[CONF_LONGITUDE]),
+            float(b[CONF_LATITUDE]), float(b[CONF_LONGITUDE]),
+        )
+    except (KeyError, TypeError, ValueError):
+        return False
+    return d < 0.5
+
+
+def entity_label(entity_id: str, friendly_name: str | None, home_name: str | None) -> str:
+    """Nom lisible d'une entité suivie ; la zone de la maison prend le nom du domicile."""
+    if entity_id == "zone.home":
+        return home_name or "Maison"
+    return friendly_name or entity_id
+
+
 def describe(data: Mapping[str, Any], entity_name: str | None = None) -> str:
     """Libellé lisible de la localisation configurée."""
     source = data.get(CONF_SOURCE, SOURCE_POSTAL)

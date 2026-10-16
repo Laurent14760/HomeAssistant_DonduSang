@@ -64,3 +64,21 @@ def test_cache_correspond_au_lieu():
     assert L.cache_matches((49.186, -0.372), CAEN)          # < 1 km
     assert not L.cache_matches((49.2764, -0.7024), CAEN)    # autre ville
     assert not L.cache_matches(None, CAEN)
+
+
+def test_meme_lieu():
+    maison_v1 = {"source": "home", "latitude": 48.74, "longitude": 2.29}  # format avant 1.3.0
+    assert L.same_location(maison_v1, {"source": "home"})
+    caen = {"source": "postal", "latitude": 49.1829, "longitude": -0.3707}
+    assert L.same_location(caen, {"source": "postal", "latitude": 49.184, "longitude": -0.371})
+    assert not L.same_location(caen, {"source": "postal", "latitude": 49.2764, "longitude": -0.7024})
+    assert L.same_location({"source": "entity", "entite": "zone.travail"}, {"source": "entity", "entite": "zone.travail"})
+    assert not L.same_location({"source": "entity", "entite": "zone.home"}, {"source": "home"})
+    assert not L.same_location(caen, {"source": "postal"})  # données incomplètes
+
+
+def test_libelle_entite():
+    assert L.entity_label("zone.home", "home", "Maison") == "Maison"
+    assert L.entity_label("zone.home", "home", None) == "Maison"
+    assert L.entity_label("person.laurent", "Laurent", "Maison") == "Laurent"
+    assert L.entity_label("zone.travail", None, "Maison") == "zone.travail"

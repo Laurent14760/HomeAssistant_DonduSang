@@ -57,7 +57,7 @@ from .const import (
     SOURCE_HOME,
     SOURCE_POSTAL,
 )
-from .location import coords_from_attributes, describe, unique_id_for
+from .location import coords_from_attributes, describe, entity_label, same_location, unique_id_for
 
 POSTAL_RE = re.compile(r"^\d{5}$")
 TRACKABLE_DOMAINS = ["zone", "person", "device_tracker"]
@@ -187,7 +187,8 @@ class _LocationSteps:
                 errors[CONF_ENTITY] = "entity_no_location"
             else:
                 self._loc = {CONF_SOURCE: SOURCE_ENTITY, CONF_ENTITY: entity_id}
-                self._title = f"EFS {state.name}"
+                label = entity_label(entity_id, state.name, self.hass.config.location_name)
+                self._title = f"EFS {label}"
                 return await self._async_location_done()
         return self.async_show_form(
             step_id="entity",
@@ -218,6 +219,9 @@ class EfsConfigFlow(_LocationSteps, ConfigFlow, domain=DOMAIN):
     async def _async_location_done(self) -> ConfigFlowResult:
         await self.async_set_unique_id(unique_id_for(self._loc))
         self._abort_if_unique_id_configured()
+        for other in self.hass.config_entries.async_entries(DOMAIN):
+            if same_location(other.data, self._loc):
+                return self.async_abort(reason="already_configured")
         return await self.async_step_settings()
 
     async def async_step_settings(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -249,8 +253,9 @@ class EfsOptionsFlow(_LocationSteps, OptionsFlow):
         data = self.config_entry.data
         name = None
         if data.get(CONF_SOURCE) == SOURCE_ENTITY:
-            state = self.hass.states.get(data.get(CONF_ENTITY, ""))
-            name = state.name if state else None
+            entity_id = data.get(CONF_ENTITY, "")
+            state = self.hass.states.get(entity_id)
+            name = entity_label(entity_id, state.name if state else None, self.hass.config.location_name)
         return describe(data, name)
 
     async def async_step_init(self, user_input: dict[str, Any] | None = None) -> ConfigFlowResult:
@@ -273,7 +278,9 @@ class EfsOptionsFlow(_LocationSteps, OptionsFlow):
         entry = self.config_entry
         new_uid = unique_id_for(self._loc)
         for other in self.hass.config_entries.async_entries(DOMAIN):
-            if other.entry_id != entry.entry_id and other.unique_id == new_uid:
+            if other.entry_id != entry.entry_id and (
+                other.unique_id == new_uid or same_location(other.data, self._loc)
+            ):
                 return self.async_abort(reason="already_configured")
         # Le titre suit le lieu ; les identifiants d'entités ne changent pas,
         # les tableaux de bord et automatisations existants restent valides.
