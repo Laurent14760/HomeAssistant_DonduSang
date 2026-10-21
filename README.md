@@ -5,7 +5,7 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 | Élément | Valeur |
 |---|---|
 | Domaine | `efs_dondesang` |
-| Version | 1.3.0 |
+| Version | 1.3.1 |
 | Home Assistant minimum | 2024.11 (icône de l’intégration affichée à partir de 2026.3) |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
@@ -138,7 +138,7 @@ Les identifiants ci-dessus sont ceux de la première instance installée avant l
 
 ### Carte dédiée `custom:efs-collectes-card`
 
-Les trois visuels (prochaine collecte, agenda, carte et remplissage) sont fournis par une carte Lovelace distribuée séparément : [HomeAssistant_DonduSang_Card](https://github.com/LoloPicolo/HomeAssistant_DonduSang_Card), à ajouter dans HACS comme dépôt personnalisé de catégorie **Tableau de bord**. Elle nécessite cette intégration en version 1.1.0 ou plus.
+Les trois visuels (prochaine collecte, agenda, carte et remplissage) sont fournis par une carte Lovelace distribuée séparément : [HomeAssistant_DonduSang_Card](https://github.com/Laurent14760/HomeAssistant_DonduSang_Card), à ajouter dans HACS comme dépôt personnalisé de catégorie **Tableau de bord**. Elle nécessite cette intégration en version 1.1.0 ou plus.
 
 ```yaml
 type: custom:efs-collectes-card
