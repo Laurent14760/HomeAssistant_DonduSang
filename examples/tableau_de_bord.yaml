@@ -1,4 +1,5 @@
-# Option 1 – carte dédiée (dépôt HomeAssistant_DonduSang_Card, à installer via HACS)
+# Option 1 – carte dédiée (dépôt HomeAssistant_DonduSang_Card, à installer via le Marketplace)
+# Propositions détaillées : README, chapitre 5 « Propositions de cartes »
 # type: custom:efs-collectes-card
 # vue: complet
 

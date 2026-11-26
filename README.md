@@ -6,10 +6,11 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 |---|---|
 | Domaine | `efs_dondesang` |
 | Version | 1.4.1 |
-| Home Assistant minimum | 2024.11 (icône de l’intégration affichée à partir de 2026.3) |
+| Home Assistant minimum | 2024.11 (2026.11 recommandé : installation par le Marketplace) |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
 | Configuration | 100 % interface, aucune ligne de YAML |
+| Installation | Marketplace de Home Assistant (2026.11+), dépôt ajouté par lien |
 
 ---
 
@@ -41,27 +42,94 @@ efs_dondesang/
 
 ---
 
-## 2. Installation
+## 2. Installation pas à pas
 
-### Option A – via HACS (recommandée)
+Exemple suivi tout au long de ce chapitre : collectes de **sang total** autour de **Bretteville-sur-Odon (14760)**, dans un rayon de **10 km**, sur les **30 prochains jours**.
 
-HACS installe une intégration depuis un dépôt GitHub. Il faut donc publier le package une fois :
+### 2.1 Prérequis
 
-1. Créer un dépôt GitHub (public ou privé accessible à HACS), par exemple `efs_dondesang`, et y pousser le contenu du zip **à la racine** (le fichier `hacs.json` et le dossier `custom_components/` doivent être au premier niveau).
-2. Mettre à jour dans `custom_components/efs_dondesang/manifest.json` les champs `documentation`, `issue_tracker` et `codeowners` avec l’adresse réelle du dépôt et votre identifiant GitHub.
-3. Facultatif mais conseillé : créer une *release* GitHub `v1.0.0`. HACS proposera alors les mises à jour à chaque nouvelle release.
-4. Dans Home Assistant : **HACS → ⋮ → Dépôts personnalisés**, saisir l’URL du dépôt, catégorie **Intégration**, puis **Ajouter**.
-5. Rechercher « EFS – Collectes de don du sang » dans HACS, cliquer **Télécharger**.
-6. **Redémarrer Home Assistant** (Paramètres → Système → ⏻ → Redémarrer).
+- **Home Assistant 2026.11 ou plus récent** : l’installation passe par le **Marketplace**, intégré à Home Assistant depuis cette version (il remplace HACS, dont il reprend les dépôts déjà installés). Sur une version plus ancienne, voir § 2.9.
+- Un **compte GitHub** relié au Marketplace : il est exigé pour ajouter un dépôt qui n’est pas dans le catalogue, ce qui est le cas de cette intégration et de sa carte.
+- Un accès Internet sortant vers `oudonner.api.efs.sante.fr` (API de l’EFS) et `geo.api.gouv.fr` (communes d’un code postal).
 
-### Option B – installation manuelle
+### 2.2 Relier GitHub au Marketplace (une seule fois)
 
-1. Décompresser le zip.
-2. Copier le dossier `custom_components/efs_dondesang` dans le dossier `/config/custom_components/` de Home Assistant (créer `custom_components` s’il n’existe pas). Les modules complémentaires *Samba share*, *Studio Code Server* ou *Advanced SSH & Web Terminal* permettent d’accéder à `/config`.
-3. Vérifier l’arborescence finale : `/config/custom_components/efs_dondesang/manifest.json` doit exister.
-4. Redémarrer Home Assistant.
+1. **Paramètres → Marketplace**.
+2. Au premier accès, lire et accepter l’avertissement sur les extensions communautaires.
+3. Lancer la connexion GitHub proposée : le Marketplace affiche un code ; l’ouvrir sur github.com/login/device, saisir le code et autoriser. Aucun mot de passe n’est saisi dans Home Assistant.
 
-L’installation manuelle ne bénéficie pas des notifications de mise à jour HACS : il faut recopier le dossier à chaque nouvelle version.
+### 2.3 Installer l’intégration
+
+1. **Paramètres → Marketplace → ⋮ → Add from link** (« Ajouter depuis un lien »).
+2. URL : `https://github.com/Laurent14760/HomeAssistant_DonduSang` ; si une catégorie est demandée : **Intégration**.
+3. Ouvrir la fiche « EFS – Collectes de don du sang », puis **Install** (dernière version, 1.4.1 ou plus).
+4. **Redémarrer Home Assistant** : Paramètres → Système → ⏻ (en haut à droite) → **Redémarrer Home Assistant**. Le redémarrage est indispensable pour charger une intégration.
+
+### 2.4 Créer l’instance « Bretteville-sur-Odon »
+
+1. **Paramètres → Appareils et services → + Ajouter une intégration**, rechercher **EFS**.
+2. Choisir **Une commune, par son code postal**, saisir `14760`, **Valider**. (Si un code postal couvre plusieurs communes, un second écran demande laquelle ; 14760 n’en couvre qu’une.)
+3. Écran des réglages, valeurs de l’exemple :
+
+| Réglage | Valeur de l’exemple | Pourquoi |
+|---|---|---|
+| Rayon de recherche | **10** km | Bretteville et sa couronne (Verson, Carpiquet, Ifs, Caen…) |
+| Type de don | **Sang total** | Compteurs de places et lien de rendez-vous du sang total |
+| Inclure les collectes professionnelles | Non | Elles sont réservées au personnel ou aux élèves |
+| Horizon | **30** jours | Délai couvert à partir d’aujourd’hui |
+| Nombre max. de collectes listées | 10 | Suffisant pour l’agenda (jusqu’à 30) |
+| Intervalle de rafraîchissement | 60 min | Bon compromis pour suivre les places |
+| Seuil « collecte proche » | 7 jours | Capteur binaire utilisé par les automatisations |
+| Exposer les Maisons du don | Non | Oui pour lister la Maison du don de Caen |
+
+4. **Valider**. L’instance « EFS Bretteville-sur-Odon » apparaît avec un appareil et ses entités :
+
+| Entité | Contenu |
+|---|---|
+| `sensor.efs_bretteville_sur_odon_prochaine_collecte` | Début de la prochaine collecte ; attributs lieu, adresse, horaires, places, lien de RDV |
+| `sensor.efs_bretteville_sur_odon_prochaine_collecte_places_restantes` / `…_places_totales` / `…_taux_remplissage` | Compteurs de la prochaine collecte (`unknown` tant que le planning n’est pas ouvert) |
+| `sensor.efs_bretteville_sur_odon_collectes_a_venir` | Nombre de collectes sur 30 jours ; attribut `collectes` (liste) |
+| `calendar.efs_bretteville_sur_odon_collectes` | Un événement par créneau |
+| `binary_sensor.efs_bretteville_sur_odon_collecte_proche` | Actif si une collecte a lieu dans les 7 jours |
+
+Les identifiants dérivent du nom de l’instance ; vérifier les vôtres dans Paramètres → Appareils et services → EFS → (instance) → entités. Une instance créée avant la 1.3.0 porte des identifiants sans le nom de la zone (`sensor.efs_prochaine_collecte`).
+
+### 2.5 Installer la carte d’affichage
+
+1. **Paramètres → Marketplace → ⋮ → Add from link**.
+2. URL : `https://github.com/Laurent14760/HomeAssistant_DonduSang_Card` ; si une catégorie est demandée : **Tableau de bord** (*Dashboard*).
+3. Ouvrir la fiche « EFS – Carte des collectes de don du sang », puis **Install** (1.3.1 ou plus). Le Marketplace déclare lui-même la ressource du tableau de bord ; aucun redémarrage n’est nécessaire.
+4. Recharger le navigateur sans cache (Ctrl + Maj + R). Application mobile : Paramètres → Application compagnon → Dépannage → **Réinitialiser le cache du frontend**, puis fermer complètement l’application et la rouvrir.
+
+### 2.6 Vérifier
+
+1. **Outils de développement → États** : `sensor.efs_bretteville_sur_odon_prochaine_collecte` affiche une date ; ses attributs donnent le lieu et les places.
+2. **Outils de développement → Actions** : choisir « Rechercher des collectes » (`efs_dondesang.rechercher_collectes`), passer en mode YAML et lancer :
+
+```yaml
+action: efs_dondesang.rechercher_collectes
+data:
+  code_postal: "14760"
+  rayon_km: 10
+  type_don: sang
+  jours: 30
+```
+
+La réponse liste les collectes (`collectes`), leur nombre (`nombre`) et `api_disponible: true`.
+3. **Paramètres → Système → Journaux** : aucune erreur `efs_dondesang`.
+
+### 2.7 Ajouter les cartes au tableau de bord
+
+Tableau de bord → ✏️ **Modifier** → **+ Ajouter une carte** → rechercher « EFS – Collectes de don du sang » (réglages dans l’éditeur visuel), ou **Manuel** pour coller l’une des propositions du chapitre 5.
+
+### 2.8 Mettre à jour
+
+Les nouvelles versions apparaissent dans **Paramètres → Mises à jour**, à côté de celles de Home Assistant. Pour une release publiée à l’instant : fiche du dépôt dans le Marketplace → ⋮ → **Refresh information**. Après la mise à jour de l’intégration, **redémarrer Home Assistant** ; après celle de la carte, vider le cache du navigateur.
+
+### 2.9 Autres modes d’installation
+
+- **Home Assistant antérieur à 2026.11 (HACS)** : HACS → ⋮ → **Dépôts personnalisés**, mêmes URL et catégories, puis **Télécharger**. À la mise à niveau vers 2026.11, le Marketplace reprend ces dépôts et leurs mises à jour sans réinstallation.
+- **Manuelle** : copier `custom_components/efs_dondesang` dans `/config/custom_components/` (modules *Samba share* ou *Studio Code Server*), redémarrer. Pour la carte : copier `dist/efs-collectes-card.js` dans `/config/www/`, puis Paramètres → Tableaux de bord → ⋮ → Ressources → `/local/efs-collectes-card.js?v=1.3.1`, type *Module JavaScript*. Pas de notification de mise à jour dans ce mode.
 
 ---
 
@@ -138,27 +206,92 @@ Les identifiants ci-dessus sont ceux de la première instance installée avant l
 
 ## 5. Affichage
 
-### Carte dédiée `custom:efs-collectes-card`
+### Propositions de cartes (exemple Bretteville-sur-Odon, 10 km, 30 jours)
 
-Les trois visuels (prochaine collecte, agenda, carte et remplissage) sont fournis par une carte Lovelace distribuée séparément : [HomeAssistant_DonduSang_Card](https://github.com/Laurent14760/HomeAssistant_DonduSang_Card), à ajouter dans HACS comme dépôt personnalisé de catégorie **Tableau de bord**. Elle nécessite cette intégration en version 1.1.0 ou plus.
+Les cartes 1 à 6 utilisent `custom:efs-collectes-card` (dépôt [HomeAssistant_DonduSang_Card](https://github.com/Laurent14760/HomeAssistant_DonduSang_Card), installé au § 2.5) ; la 7 n’utilise que des cartes natives. Toutes se collent par Tableau de bord → ✏️ Modifier → + Ajouter une carte → **Manuel**, et se règlent ensuite dans l’éditeur visuel.
+
+| N° | Carte | Source des données | Usage conseillé |
+|---|---|---|---|
+| 1 | Vue complète de l’instance | Instance « EFS Bretteville-sur-Odon » | Tableau de bord principal |
+| 2 | Prochaine collecte à Bretteville | Instance | Tablette murale, vue compacte |
+| 3 | Rendez-vous disponibles | Instance | Savoir où donner cette semaine |
+| 4 | Recherche propre à la carte | Code postal, rayon, type, jours | Suivre un lieu sans créer d’instance |
+| 5 | Recherche libre avec formulaire | Saisie dans la carte | Tablette partagée, autre type de don |
+| 6 | Uniquement la commune | Rayon 0 | Collectes dans Bretteville, sans les voisines |
+| 7 | Cartes natives | Entités de l’instance | Sans carte personnalisée |
+
+**1. Vue complète de l’instance** – prochaine collecte, agenda, plan et remplissage :
 
 ```yaml
 type: custom:efs-collectes-card
-vue: synthese            # synthese | agenda | carte | complet
+entity: sensor.efs_bretteville_sur_odon_collectes_a_venir
+vue: complet
+titre: Don du sang – Bretteville-sur-Odon
 ```
 
-Depuis la 1.4.0 de l’intégration (carte 1.3.0), la carte peut faire sa propre recherche à partir d’un **code postal**, d’un **rayon d’action**, d’un **type de collecte** et d’un **nombre de jours**, et proposer ces champs dans la carte elle-même :
+**2. Prochaine collecte à Bretteville (tablette murale)** – présente la prochaine collecte *dans la commune* plutôt que la plus proche dans le temps, sans en-tête ni pied :
 
 ```yaml
 type: custom:efs-collectes-card
+entity: sensor.efs_bretteville_sur_odon_collectes_a_venir
+vue: synthese
+commune: Bretteville-sur-Odon
+afficher_entete: false
+afficher_pied: false
+```
+
+La carte ne voit que les collectes listées par l’instance : si celle de Bretteville n’apparaît pas, augmenter son réglage « Nombre maximum de collectes listées » (jusqu’à 30) ou utiliser la proposition 6.
+
+**3. Rendez-vous disponibles dans les 30 jours** – agenda limité aux collectes au planning ouvert :
+
+```yaml
+type: custom:efs-collectes-card
+entity: sensor.efs_bretteville_sur_odon_collectes_a_venir
+vue: agenda
+titre: Où donner ce mois-ci
+filtre: rdv_ouverts
+jours: 30
+max: 8
+```
+
+**4. Recherche propre à la carte** – mêmes paramètres que l’instance, sans en dépendre (aucune entité, aucun historique) :
+
+```yaml
+type: custom:efs-collectes-card
+vue: complet
+titre: Collectes autour de Bretteville
 code_postal: "14760"
 rayon_km: 10
-type_don: sang           # sang | plasma | plaquettes
+type_don: sang
 jours: 30
-afficher_formulaire: true
 ```
 
-Elle s’appuie sur l’action décrite ci-dessous.
+**5. Recherche libre avec formulaire** – code postal, rayon, type de collecte et nombre de jours modifiables dans la carte ; les valeurs ci-dessous sont celles proposées à l’ouverture :
+
+```yaml
+type: custom:efs-collectes-card
+vue: agenda
+afficher_formulaire: true
+code_postal: "14760"
+rayon_km: 10
+type_don: sang
+jours: 30
+```
+
+**6. Uniquement la commune de Bretteville-sur-Odon** – rayon 0 : seules les collectes de la commune de départ, ici sur 60 jours pour ne pas manquer la prochaine :
+
+```yaml
+type: custom:efs-collectes-card
+vue: synthese
+titre: Collectes à Bretteville-sur-Odon
+code_postal: "14760"
+rayon_km: 0
+jours: 60
+```
+
+**7. Cartes natives** – voir ci-dessous et `examples/tableau_de_bord.yaml` (remplacer `sensor.efs_…` par les identifiants de l’instance, ex. `sensor.efs_bretteville_sur_odon_…`).
+
+Bornes communes : rayon de 0 à 50 km (1 à 50 pour une instance), nombre de jours de 1 à 180 ; une valeur hors bornes est signalée par la carte. Les réglages d’affichage (`afficher_*`, `couleur`, `max`, `distance_max`) sont détaillés dans le README de la carte.
 
 ### Action `efs_dondesang.rechercher_collectes`
 
@@ -192,7 +325,7 @@ Les filtres (type de don, nombre de jours, collectes professionnelles) sont appl
 
 ### Cartes natives
 
-Le fichier `examples/tableau_de_bord.yaml` contient une pile de cartes prête à coller (Tableau de bord → ⋮ → Modifier → Ajouter une carte → Manuel). Elle combine :
+Le fichier `examples/tableau_de_bord.yaml` contient une pile de cartes prête à coller, écrite pour la première instance (`sensor.efs_…`) : adapter les identifiants à votre instance (Tableau de bord → ⋮ → Modifier → Ajouter une carte → Manuel). Elle combine :
 
 - une carte **Markdown** de synthèse :
 
