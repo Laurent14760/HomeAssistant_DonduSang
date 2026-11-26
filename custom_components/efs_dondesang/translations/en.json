@@ -190,7 +190,7 @@
         },
         "rayon_km": {
           "name": "Radius",
-          "description": "Search radius around the starting point."
+          "description": "Search radius around the starting point. 0 = collections in the starting municipality only (postal code required)."
         },
         "type_don": {
           "name": "Donation type",
@@ -220,6 +220,9 @@
     },
     "efs_unavailable": {
       "message": "EFS API unavailable and no cached data for this search: {erreur}"
+    },
+    "radius_zero_needs_postal_code": {
+      "message": "A radius of 0 (starting municipality only) requires a postal code."
     }
   }
 }

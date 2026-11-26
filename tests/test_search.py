@@ -100,3 +100,41 @@ def test_response_days_limit_and_cache_source():
     assert all(c["date"] <= "2026-10-21" for c in short["collectes"])
     stale, _ = _response(api_ok=False)
     assert stale["source"] == "cache" and stale["api_disponible"] is False
+
+
+# --- Rayon 0 : commune de départ uniquement ---------------------------------
+def _parse10():
+    return p.parse_collections(
+        load_fixture("searchnearpoint_14760.json"),
+        center_lat=CENTER[0], center_lon=CENTER[1], radius_km=s.COMMUNE_SEARCH_RADIUS,
+        don_type="sang", include_pro=False, horizon_days=90, now=NOW,
+    )
+
+
+def test_filter_commune_keeps_only_starting_municipality():
+    full = _parse10()
+    only = s.filter_commune(full, "Bretteville-sur-Odon")
+    assert only.collectes and len(only.collectes) < len(full.collectes)
+    assert {c.commune for c in only.collectes} == {"Bretteville-sur-Odon"}
+    # « Bretteville-l'Orgueilleuse » n'est pas « Bretteville-sur-Odon »
+    assert all("Orgueilleuse" not in c.commune for c in only.collectes)
+
+
+def test_filter_commune_matches_efs_spelling_and_postal_prefix():
+    assert s._meme_commune("BRETTEVILLE SUR ODON", "Bretteville-sur-Odon")
+    assert s._meme_commune("14000 Caen", "Caen")
+    assert not s._meme_commune("14000 Caen", "Bretteville-sur-Odon")
+    assert not s._meme_commune("Caen la Mer", "Caen")
+    assert not s._meme_commune(None, "Caen")
+
+
+def test_response_perimetre():
+    resp, _ = _response()
+    assert resp["perimetre"] == "rayon"
+    only = s.filter_commune(_parse10(), "Bretteville-sur-Odon")
+    resp0 = s.build_response(
+        only, centre=s.Centre("Bretteville-sur-Odon", *CENTER, "14760", "14101"), communes=COMMUNES,
+        radius_km=0, don_type="sang", days=90, max_items=30, fetched_at=None, api_ok=True,
+    )
+    assert resp0["perimetre"] == "commune" and resp0["rayon_km"] == 0
+    assert resp0["nombre"] == len(only.collectes)

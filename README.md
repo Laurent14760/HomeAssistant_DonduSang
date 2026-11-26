@@ -5,7 +5,7 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 | Élément | Valeur |
 |---|---|
 | Domaine | `efs_dondesang` |
-| Version | 1.4.0 |
+| Version | 1.4.1 |
 | Home Assistant minimum | 2024.11 (icône de l’intégration affichée à partir de 2026.3) |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
@@ -168,13 +168,13 @@ Recherche à la demande, sans instance dédiée ni entité créée. Elle renvoie
 |---|---|---|
 | `code_postal` | — | Point de départ (5 chiffres). À défaut : `latitude` et `longitude` |
 | `commune` | 1re par ordre alphabétique | Nom ou code INSEE, pour un code postal couvrant plusieurs communes |
-| `rayon_km` | 10 | 1 à 50 km |
+| `rayon_km` | 10 | 0 à 50 km ; **0 = uniquement la commune de départ** (recherche à 10 km puis filtre sur le nom de la commune ; code postal requis) |
 | `type_don` | `sang` | `sang`, `plasma`, `plaquettes` |
 | `jours` | 30 | 1 à 180 jours à partir d’aujourd’hui |
 | `inclure_professionnelles` | `false` | Collectes en entreprise ou établissement scolaire |
 | `max_collectes` | 30 | 1 à 100 (la réponse n’est pas historisée, la limite de 16 Ko ne s’applique pas) |
 
-La réponse reprend le format des attributs de `collectes_a_venir` : `centre` (libellé, code postal, code INSEE, coordonnées), `communes` (communes du code postal), `rayon_km`, `type_don`, `horizon_jours`, `nombre` (total avant troncature), `collectes`, `maisons_du_don`, `derniere_mise_a_jour`, `api_disponible`, `source` (`api` ou `cache`).
+La réponse reprend le format des attributs de `collectes_a_venir` : `perimetre` (`rayon` ou `commune`), `centre` (libellé, code postal, code INSEE, coordonnées), `communes` (communes du code postal), `rayon_km`, `type_don`, `horizon_jours`, `nombre` (total avant troncature), `collectes`, `maisons_du_don`, `derniere_mise_a_jour`, `api_disponible`, `source` (`api` ou `cache`).
 
 ```yaml
 action: efs_dondesang.rechercher_collectes

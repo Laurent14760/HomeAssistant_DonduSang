@@ -39,10 +39,12 @@ from .search import (
     RADIUS_MAX,
     RADIUS_MIN,
     SEARCH_CACHE_TTL,
+    COMMUNE_SEARCH_RADIUS,
     Centre,
     TtlCache,
     build_response,
     choose_commune,
+    filter_commune,
     search_key,
 )
 
@@ -81,6 +83,7 @@ SEARCH_SCHEMA = vol.All(
             vol.Optional(ATTR_COMMUNE): cv.string,
             vol.Optional(ATTR_LATITUDE): vol.All(vol.Coerce(float), vol.Range(-90, 90)),
             vol.Optional(ATTR_LONGITUDE): vol.All(vol.Coerce(float), vol.Range(-180, 180)),
+            # 0 = uniquement la commune de départ (nécessite un code postal)
             vol.Optional(ATTR_RADIUS, default=DEFAULT_SEARCH_RADIUS): vol.All(
                 vol.Coerce(float), vol.Range(RADIUS_MIN, RADIUS_MAX)
             ),
@@ -182,17 +185,28 @@ class _SearchService:
             )
 
         radius = float(data[ATTR_RADIUS])
-        payload, fetched_at, api_ok = await self._payload(centre.latitude, centre.longitude, radius)
+        commune_seule = radius == 0
+        if commune_seule and not postal_code:
+            raise ServiceValidationError(
+                translation_domain=DOMAIN, translation_key="radius_zero_needs_postal_code"
+            )
+        # Rayon 0 : recherche autour de la commune, puis filtre sur son nom.
+        search_radius = float(COMMUNE_SEARCH_RADIUS) if commune_seule else radius
+        payload, fetched_at, api_ok = await self._payload(
+            centre.latitude, centre.longitude, search_radius
+        )
         result = parse_collections(
             payload,
             center_lat=centre.latitude,
             center_lon=centre.longitude,
-            radius_km=radius,
+            radius_km=search_radius,
             don_type=data[ATTR_DON_TYPE],
             include_pro=bool(data[ATTR_INCLUDE_PRO]),
             horizon_days=int(data[ATTR_DAYS]),
             now=dt_util.now(),
         )
+        if commune_seule:
+            result = filter_commune(result, centre.libelle)
         return build_response(
             result,
             centre=centre,

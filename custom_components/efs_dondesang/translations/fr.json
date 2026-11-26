@@ -190,7 +190,7 @@
         },
         "rayon_km": {
           "name": "Rayon d'action",
-          "description": "Rayon de recherche autour du point de départ."
+          "description": "Rayon de recherche autour du point de départ. 0 = uniquement les collectes de la commune de départ (code postal requis)."
         },
         "type_don": {
           "name": "Type de collecte",
@@ -220,6 +220,9 @@
     },
     "efs_unavailable": {
       "message": "API EFS indisponible et aucune donnée en cache pour cette recherche : {erreur}"
+    },
+    "radius_zero_needs_postal_code": {
+      "message": "Un rayon de 0 (commune de départ uniquement) nécessite un code postal."
     }
   }
 }

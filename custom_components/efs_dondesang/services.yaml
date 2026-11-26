@@ -28,12 +28,12 @@ rechercher_collectes:
           max: 180
           step: any
           mode: box
-    # Rayon d'action autour du point de départ
+    # Rayon d'action autour du point de départ (0 = uniquement la commune de départ)
     rayon_km:
       default: 10
       selector:
         number:
-          min: 1
+          min: 0
           max: 50
           unit_of_measurement: km
           mode: slider

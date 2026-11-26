@@ -12,7 +12,7 @@ from datetime import datetime
 import time
 from typing import Any, Callable, Generic, Hashable, TypeVar
 
-from .parser import ParseResult, _normalize
+from .parser import Collecte, MaisonDuDon, ParseResult, _normalize
 
 # Durées de vie des caches de l'action (secondes).
 # Les compteurs de places évoluent vite : 15 min évitent de solliciter l'API EFS à chaque
@@ -25,7 +25,12 @@ CACHE_MAX_ENTRIES = 32
 # Bornes des paramètres de l'action (identiques à celles des options de l'intégration,
 # sauf le nombre de collectes : la réponse n'est pas historisée, la limite des 16 Ko
 # du recorder ne s'applique donc pas).
-RADIUS_MIN, RADIUS_MAX, DEFAULT_SEARCH_RADIUS = 1, 50, 10
+RADIUS_MIN, RADIUS_MAX, DEFAULT_SEARCH_RADIUS = 0, 50, 10
+# Rayon 0 = « uniquement la commune de départ » : l'API est interrogée dans ce rayon
+# (assez large pour couvrir une commune étendue), puis seules les collectes de la
+# commune sont gardées. Un rayon géométrique nul ne trouverait rien : les lieux de
+# collecte ne sont jamais au centre exact de la commune.
+COMMUNE_SEARCH_RADIUS = 10
 DAYS_MIN, DAYS_MAX, DEFAULT_SEARCH_DAYS = 1, 180, 30
 ITEMS_MIN, ITEMS_MAX, DEFAULT_SEARCH_ITEMS = 1, 100, 30
 
@@ -109,6 +114,30 @@ def _cle(text: Any) -> str:
     return " ".join("".join(ch if ch.isalnum() else " " for ch in _normalize(str(text or ""))).split())
 
 
+def _meme_commune(nom_lieu: str | None, nom_commune: str) -> bool:
+    """La commune d'un lieu EFS correspond-elle à la commune de départ ?
+
+    L'EFS écrit « BRETTEVILLE SUR ODON », l'API Géo « Bretteville-sur-Odon » ; les
+    maisons du don portent parfois le code postal devant (« 14000 Caen »).
+    """
+    lieu, cible = _cle(nom_lieu), _cle(nom_commune)
+    if not lieu or not cible:
+        return False
+    if lieu == cible:
+        return True
+    mots = lieu.split()
+    return mots[0].isdigit() and " ".join(mots[1:]) == cible
+
+
+def filter_commune(result: ParseResult, nom_commune: str) -> ParseResult:
+    """Ne garde que les collectes (et maisons du don) situées dans la commune de départ."""
+    return ParseResult(
+        collectes=[c for c in result.collectes if _meme_commune(c.commune, nom_commune)],
+        maisons_du_don=[m for m in result.maisons_du_don if _meme_commune(m.commune, nom_commune)],
+        rejets=result.rejets,
+    )
+
+
 @dataclass(frozen=True)
 class Centre:
     """Point de départ de la recherche, tel que renvoyé à la carte."""
@@ -151,6 +180,8 @@ def build_response(
         # Communes couvertes par le code postal, pour proposer un autre point de départ.
         "communes": [{"nom": c.get("nom"), "code": c.get("code")} for c in communes],
         "rayon_km": radius_km,
+        # « commune » quand le rayon vaut 0 (collectes de la commune de départ uniquement)
+        "perimetre": "commune" if not radius_km else "rayon",
         "type_don": don_type,
         "horizon_jours": days,
         "nombre": len(result.collectes),
