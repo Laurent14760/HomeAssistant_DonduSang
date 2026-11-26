@@ -4,14 +4,26 @@ from __future__ import annotations
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.storage import Store
+from homeassistant.helpers.typing import ConfigType
 
 from .const import DOMAIN, STORAGE_VERSION
 from .coordinator import EfsCoordinator
+from .services import async_setup_services
 
 PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.CALENDAR, Platform.BINARY_SENSOR]
 
+# Configuration 100 % interface : aucune clé YAML n'est attendue.
+CONFIG_SCHEMA = cv.config_entry_only_config_schema(DOMAIN)
+
 type EfsConfigEntry = ConfigEntry[EfsCoordinator]
+
+
+async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
+    """Déclare l'action de recherche à la demande (utilisée par la carte Lovelace)."""
+    async_setup_services(hass)
+    return True
 
 
 async def async_setup_entry(hass: HomeAssistant, entry: EfsConfigEntry) -> bool:

@@ -166,5 +166,60 @@
         "name": "Collection nearby"
       }
     }
+  },
+  "services": {
+    "rechercher_collectes": {
+      "name": "Search collections",
+      "description": "Searches EFS collections around a postal code (or coordinates), within a radius, for a donation type over the next N days, and returns them as a response. Used by the efs-collectes-card Lovelace card; creates no entity.",
+      "fields": {
+        "code_postal": {
+          "name": "Postal code",
+          "description": "Starting point: 5-digit postal code."
+        },
+        "commune": {
+          "name": "Municipality",
+          "description": "Name or INSEE code, when the postal code covers several municipalities (default: first in alphabetical order)."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "Starting point without postal code (with longitude)."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Starting point without postal code (with latitude)."
+        },
+        "rayon_km": {
+          "name": "Radius",
+          "description": "Search radius around the starting point."
+        },
+        "type_don": {
+          "name": "Donation type",
+          "description": "Collection type: whole blood, plasma or platelets."
+        },
+        "jours": {
+          "name": "Number of days",
+          "description": "Collections from today up to this many days ahead."
+        },
+        "inclure_professionnelles": {
+          "name": "Include workplace/school collections",
+          "description": "Often restricted to staff or students."
+        },
+        "max_collectes": {
+          "name": "Maximum number of collections",
+          "description": "Size of the returned list."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_postal_code": {
+      "message": "No municipality found for postal code {code_postal}."
+    },
+    "geo_unavailable": {
+      "message": "Unable to reach the Géo API (geo.api.gouv.fr): {erreur}"
+    },
+    "efs_unavailable": {
+      "message": "EFS API unavailable and no cached data for this search: {erreur}"
+    }
   }
 }

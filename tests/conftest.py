@@ -22,6 +22,7 @@ sys.modules.setdefault("efs_pkg", _pkg)
 
 parser = importlib.import_module("efs_pkg.parser")
 location = importlib.import_module("efs_pkg.location")
+search = importlib.import_module("efs_pkg.search")
 
 
 def load_fixture(name: str):

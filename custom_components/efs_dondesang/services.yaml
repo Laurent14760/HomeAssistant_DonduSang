@@ -1,0 +1,70 @@
+# Action de recherche à la demande, utilisée par la carte custom:efs-collectes-card.
+# Elle renvoie une réponse (response_variable) et ne crée aucune entité.
+rechercher_collectes:
+  fields:
+    # Point de départ : un code postal (ou, à défaut, une latitude et une longitude)
+    code_postal:
+      example: "14760"
+      selector:
+        text:
+    # Pour les codes postaux couvrant plusieurs communes : nom ou code INSEE
+    commune:
+      example: "Bretteville-l'Orgueilleuse"
+      selector:
+        text:
+    latitude:
+      advanced: true
+      selector:
+        number:
+          min: -90
+          max: 90
+          step: any
+          mode: box
+    longitude:
+      advanced: true
+      selector:
+        number:
+          min: -180
+          max: 180
+          step: any
+          mode: box
+    # Rayon d'action autour du point de départ
+    rayon_km:
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 50
+          unit_of_measurement: km
+          mode: slider
+    # Type de collecte
+    type_don:
+      default: sang
+      selector:
+        select:
+          translation_key: type_don
+          options:
+            - sang
+            - plasma
+            - plaquettes
+    # Nombre de jours à couvrir à partir d'aujourd'hui
+    jours:
+      default: 30
+      selector:
+        number:
+          min: 1
+          max: 180
+          unit_of_measurement: j
+          mode: box
+    inclure_professionnelles:
+      default: false
+      selector:
+        boolean:
+    max_collectes:
+      default: 30
+      advanced: true
+      selector:
+        number:
+          min: 1
+          max: 100
+          mode: box

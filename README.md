@@ -5,7 +5,7 @@ Intégration personnalisée qui interroge l’API Carto v3 publique de l’Étab
 | Élément | Valeur |
 |---|---|
 | Domaine | `efs_dondesang` |
-| Version | 1.3.1 |
+| Version | 1.4.0 |
 | Home Assistant minimum | 2024.11 (icône de l’intégration affichée à partir de 2026.3) |
 | Classe IoT | `cloud_polling` (1 appel par instance et par intervalle) |
 | Dépendances Python | aucune (aiohttp fourni par Home Assistant) |
@@ -26,6 +26,8 @@ efs_dondesang/
 │   ├── coordinator.py                DataUpdateCoordinator + repli sur cache
 │   ├── config_flow.py                assistant d'installation et options
 │   ├── sensor.py / calendar.py / binary_sensor.py
+│   ├── services.py, services.yaml   action « Rechercher des collectes » (réponse à la demande)
+│   ├── search.py                    logique pure de l'action (commune, cache, réponse)
 │   ├── diagnostics.py
 │   ├── brand/                       icône et logo (goutte de sang)
 │   ├── location.py                  choix et suivi du lieu de recherche
@@ -145,6 +147,47 @@ type: custom:efs-collectes-card
 vue: synthese            # synthese | agenda | carte | complet
 ```
 
+Depuis la 1.4.0 de l’intégration (carte 1.3.0), la carte peut faire sa propre recherche à partir d’un **code postal**, d’un **rayon d’action**, d’un **type de collecte** et d’un **nombre de jours**, et proposer ces champs dans la carte elle-même :
+
+```yaml
+type: custom:efs-collectes-card
+code_postal: "14760"
+rayon_km: 10
+type_don: sang           # sang | plasma | plaquettes
+jours: 30
+afficher_formulaire: true
+```
+
+Elle s’appuie sur l’action décrite ci-dessous.
+
+### Action `efs_dondesang.rechercher_collectes`
+
+Recherche à la demande, sans instance dédiée ni entité créée. Elle renvoie une réponse (`response_variable`) et peut donc aussi servir dans un script.
+
+| Champ | Défaut | Description |
+|---|---|---|
+| `code_postal` | — | Point de départ (5 chiffres). À défaut : `latitude` et `longitude` |
+| `commune` | 1re par ordre alphabétique | Nom ou code INSEE, pour un code postal couvrant plusieurs communes |
+| `rayon_km` | 10 | 1 à 50 km |
+| `type_don` | `sang` | `sang`, `plasma`, `plaquettes` |
+| `jours` | 30 | 1 à 180 jours à partir d’aujourd’hui |
+| `inclure_professionnelles` | `false` | Collectes en entreprise ou établissement scolaire |
+| `max_collectes` | 30 | 1 à 100 (la réponse n’est pas historisée, la limite de 16 Ko ne s’applique pas) |
+
+La réponse reprend le format des attributs de `collectes_a_venir` : `centre` (libellé, code postal, code INSEE, coordonnées), `communes` (communes du code postal), `rayon_km`, `type_don`, `horizon_jours`, `nombre` (total avant troncature), `collectes`, `maisons_du_don`, `derniere_mise_a_jour`, `api_disponible`, `source` (`api` ou `cache`).
+
+```yaml
+action: efs_dondesang.rechercher_collectes
+data:
+  code_postal: "14400"
+  rayon_km: 15
+  type_don: plasma
+  jours: 45
+response_variable: recherche
+```
+
+Les filtres (type de don, nombre de jours, collectes professionnelles) sont appliqués sur une réponse brute de l’EFS mise en cache 15 minutes par zone ; les communes d’un code postal le sont 24 heures. En cas de panne, la dernière réponse connue pour la zone est renvoyée avec `api_disponible: false`. L’action est déclarée dès que l’intégration est chargée : au moins une instance doit être installée.
+
 > La version 1.1.0 de l’intégration embarquait cette carte ; depuis la 1.2.0 elle ne l’embarque plus. Après la mise à jour, supprimez toute ressource de tableau de bord pointant vers `/efs_dondesang/efs-collectes-card.js`.
 
 ### Cartes natives
@@ -218,7 +261,7 @@ pip install -r requirements_test.txt
 pytest
 ```
 
-Les tests portent sur la logique métier (`parser.py`), indépendante de Home Assistant, à partir de réponses JSON enregistrées dans `tests/fixtures/` : conversion rayon/rectangle, haversine, filtre au cercle, cohérence code postal, collectes professionnelles, créneaux nuls ou au format datetime, planning non ouvert, collecte complète, bascule de type de don, doublons, horizon, taille de l’attribut `collectes`.
+Les tests portent sur la logique métier (`parser.py`, `search.py`), indépendante de Home Assistant, à partir de réponses JSON enregistrées dans `tests/fixtures/` : conversion rayon/rectangle, haversine, filtre au cercle, cohérence code postal, collectes professionnelles, créneaux nuls ou au format datetime, planning non ouvert, collecte complète, bascule de type de don, doublons, horizon, taille de l’attribut `collectes` ; pour l’action de recherche : choix de la commune d’un code postal, cache (fraîcheur, repli, éviction), format et troncature de la réponse.
 
 ---
 

@@ -166,5 +166,60 @@
         "name": "Collecte proche"
       }
     }
+  },
+  "services": {
+    "rechercher_collectes": {
+      "name": "Rechercher des collectes",
+      "description": "Recherche les collectes EFS autour d'un code postal (ou de coordonnées), dans un rayon donné, pour un type de don sur les N prochains jours, et les renvoie en réponse. Utilisée par la carte Lovelace efs-collectes-card ; ne crée aucune entité.",
+      "fields": {
+        "code_postal": {
+          "name": "Code postal",
+          "description": "Point de départ : code postal à 5 chiffres."
+        },
+        "commune": {
+          "name": "Commune",
+          "description": "Nom ou code INSEE, quand le code postal couvre plusieurs communes (défaut : la première par ordre alphabétique)."
+        },
+        "latitude": {
+          "name": "Latitude",
+          "description": "Point de départ sans code postal (avec la longitude)."
+        },
+        "longitude": {
+          "name": "Longitude",
+          "description": "Point de départ sans code postal (avec la latitude)."
+        },
+        "rayon_km": {
+          "name": "Rayon d'action",
+          "description": "Rayon de recherche autour du point de départ."
+        },
+        "type_don": {
+          "name": "Type de collecte",
+          "description": "Sang total, plasma ou plaquettes."
+        },
+        "jours": {
+          "name": "Nombre de jours",
+          "description": "Collectes d'aujourd'hui jusqu'à ce nombre de jours."
+        },
+        "inclure_professionnelles": {
+          "name": "Inclure les collectes en entreprise / établissement scolaire",
+          "description": "Souvent réservées au personnel ou aux élèves."
+        },
+        "max_collectes": {
+          "name": "Nombre maximum de collectes",
+          "description": "Taille de la liste renvoyée."
+        }
+      }
+    }
+  },
+  "exceptions": {
+    "unknown_postal_code": {
+      "message": "Aucune commune trouvée pour le code postal {code_postal}."
+    },
+    "geo_unavailable": {
+      "message": "Impossible de joindre l'API Géo (geo.api.gouv.fr) : {erreur}"
+    },
+    "efs_unavailable": {
+      "message": "API EFS indisponible et aucune donnée en cache pour cette recherche : {erreur}"
+    }
   }
 }
